@@ -5,7 +5,7 @@
     "ground": "/assets/terrain/grass.png"
   },
   "player": {
-    "spriteSheet": "/assets/characters/farmer-eight-directions.png",
+    "spriteSheet": "/assets/characters/boy-eight-directions.png",
     "frameWidth": 24,
     "frameHeight": 32,
     "speed": 72,

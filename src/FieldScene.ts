@@ -16,7 +16,7 @@ export class FieldScene extends Phaser.Scene {
 
   preload() {
     this.load.image('grass', content.world.ground);
-    this.load.spritesheet('farmer', content.player.spriteSheet, {
+    this.load.spritesheet('player', content.player.spriteSheet, {
       frameWidth: content.player.frameWidth,
       frameHeight: content.player.frameHeight,
     });
@@ -29,7 +29,7 @@ export class FieldScene extends Phaser.Scene {
     for (const [direction, frames] of Object.entries(player.animations)) {
       this.anims.create({
         key: `walk-${direction}`,
-        frames: frames.walk.map((frame) => ({ key: 'farmer', frame })),
+        frames: frames.walk.map((frame) => ({ key: 'player', frame })),
         frameRate: player.walkFrameRate,
         repeat: -1,
       });
@@ -43,7 +43,7 @@ export class FieldScene extends Phaser.Scene {
       bottom: world.height - 4,
     };
     this.shadow = this.add.ellipse(this.state.x, this.state.y - 2, 16, 5, 0x2c502c, 0.28);
-    this.player = this.add.sprite(this.state.x, this.state.y, 'farmer', player.animations.down.idle)
+    this.player = this.add.sprite(this.state.x, this.state.y, 'player', player.animations.down.idle)
       .setOrigin(0.5, 1);
 
     this.cursors = this.input.keyboard!.createCursorKeys();
