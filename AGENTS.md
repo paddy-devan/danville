@@ -26,6 +26,16 @@
 - Before completing a change, run the relevant available checks, including TypeScript validation, tests and production builds.
 - Do not claim functionality has been tested unless it has actually been verified. Identify any aspects that require manual playtesting.
 
+## Content and assets
+
+- Design the game to make it easy for non-developers to create, modify and add content without needing to understand or edit the underlying TypeScript code.
+- Prefer a data-driven approach where appropriate. Game content such as characters, crops, items, animations and maps should be defined through assets and simple configuration files, rather than hardcoded into gameplay logic.
+- Maintain a clear, intuitive and consistent folder structure for assets and their associated configuration. Use descriptive names and conventions that make it easy to understand how content is organised and used by the game.
+- Support standard external creative tools and formats where practical, such as sprite sheets from Piskel or Aseprite and tilemaps from Tiled.
+- Establish reusable systems so that adding a new instance of an existing content type (e.g. a new crop, character or item) generally requires only assets and configuration, rather than new code.
+- Make the relationship between assets, configuration and in-game behaviour easy to discover and understand. Provide clear examples and document the process for adding or modifying content.
+- Avoid unnecessary complexity in the content pipeline. Prefer simple, transparent conventions over elaborate tooling or abstractions unless the project's needs justify them.
+
 ## specification.md
 
 - Maintain `specification.md` as an accurate description of the game's current functionality, key systems and overall architecture.
@@ -34,4 +44,5 @@
 - Treat the specification as a description of the current state, not a changelog. Revise, consolidate or restructure existing sections rather than simply appending information.
 - Keep the document concise, clearly written and accessible to a human reader, while being sufficiently precise to constrain future development.
 - Ensure that the specification remains consistent with the implementation. If an approved change supersedes existing behaviour, update the specification accordingly.
-- The role of the README.md file in this repo is only to give  a brief overview of the game (max one paragraph), and to explain in very simple terms to inexperienced developers how to test run the game on their computer (npm run dev, view preview in browser etc.).
+- Document the game's content model, including how assets and configuration files relate to game systems, and how new content can be added without modifying code.
+- The role of the README.md file in this repo is only to give a brief overview of the game (max one paragraph), and to explain in very simple terms to inexperienced developers how to test run the game on their computer (npm run dev, view preview in browser etc.).
