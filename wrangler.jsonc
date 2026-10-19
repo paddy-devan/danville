@@ -3,6 +3,12 @@
   "name": "danville",
   "compatibility_date": "2026-10-19",
   "workers_dev": true,
+  "routes": [
+    {
+      "pattern": "danville.co.uk",
+      "custom_domain": true
+    }
+  ],
   "preview_urls": true,
   "previews": {},
   "assets": {
