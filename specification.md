@@ -2,7 +2,7 @@
 
 ## Current playable game
 
-Danville is a browser-based, client-side 2D game template using Phaser 4, TypeScript and Vite. It runs locally with no backend or deployment configuration.
+Danville is a browser-based, client-side 2D game template using Phaser 4, TypeScript and Vite. It runs locally or as static assets on Cloudflare Workers, with no gameplay backend.
 
 The scene is an empty green field with a subtle pixel grass texture and one farmer. It uses a slightly elevated top-down view in the style of classic farming games, rather than a diamond isometric projection. A 480 × 320 logical canvas scales to fit the browser while preserving its aspect ratio and using nearest-neighbour pixel rendering. Extra space is letterboxed. A small HTML hint explains the controls.
 
@@ -27,3 +27,9 @@ The grass image at `public/assets/terrain/grass.png` repeats across the field. R
 ## Local checks
 
 `npm run typecheck` validates TypeScript, `npm test` checks movement rules, and `npm run build` validates and builds the production files into `dist/`. `npm run preview` serves that build locally. Visual appearance, keyboard input and animations also need browser playtesting.
+
+## Deployment
+
+Cloudflare Workers Builds connects directly to `paddy-devan/danville` on GitHub. Pushes to `main` deploy production; preview builds are enabled for every other branch. Both run `npm test && npm run build` before deployment, so failed tests, TypeScript checks or builds stop publication. Cloudflare runs `npx wrangler deploy` for production and `npx wrangler preview` for branch previews. Branch previews update independently of production.
+
+`wrangler.jsonc` names the Worker `danville` and publishes only the built `dist/` directory. No server script or Cloudflare Vite plugin is needed. Wrangler is pinned in the development dependencies and `.node-version` selects Node 24 for Cloudflare's build environment. Repository connection, build commands and branch controls live in the Cloudflare dashboard, not a GitHub Actions workflow. Cloudflare manages build authentication; no deployment credentials belong in the repository.
