@@ -1,0 +1,49 @@
+:root {
+  color-scheme: dark;
+  font-family: monospace;
+  background: #243c2b;
+  color: #f5f0d4;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  display: grid;
+  place-items: center;
+}
+
+#stage {
+  position: relative;
+  width: min(100vw, calc(100dvh * var(--game-aspect)));
+  height: min(100dvh, calc(100vw / var(--game-aspect)));
+}
+
+#game {
+  width: 100%;
+  height: 100%;
+}
+
+canvas {
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+#controls {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  text-shadow: 1px 1px #34552d;
+  pointer-events: none;
+  user-select: none;
+}
