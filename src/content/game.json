@@ -1,0 +1,25 @@
+{
+  "world": {
+    "width": 480,
+    "height": 320,
+    "ground": "/assets/terrain/grass.png"
+  },
+  "player": {
+    "spriteSheet": "/assets/characters/farmer-eight-directions.png",
+    "frameWidth": 24,
+    "frameHeight": 32,
+    "speed": 72,
+    "walkFrameRate": 8,
+    "spawn": { "x": 240, "y": 176 },
+    "animations": {
+      "down": { "idle": 0, "walk": [1, 0, 2, 0], "flipX": false },
+      "left": { "idle": 3, "walk": [4, 3, 5, 3], "flipX": false },
+      "right": { "idle": 3, "walk": [4, 3, 5, 3], "flipX": true },
+      "up": { "idle": 6, "walk": [7, 6, 8, 6], "flipX": false },
+      "down-left": { "idle": 9, "walk": [10, 9, 11, 9], "flipX": false },
+      "down-right": { "idle": 9, "walk": [10, 9, 11, 9], "flipX": true },
+      "up-left": { "idle": 12, "walk": [13, 12, 14, 12], "flipX": false },
+      "up-right": { "idle": 12, "walk": [13, 12, 14, 12], "flipX": true }
+    }
+  }
+}
