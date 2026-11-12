@@ -1,9 +1,10 @@
 # Artwork
 
-Artwork was generated with the built-in Image Gen tool and prepared with Sharp outside the game. Neither tool is used at runtime or added as a game dependency.
+The player and base grass artwork were generated with the built-in Image Gen tool and prepared with Sharp outside the game. Neither tool is used at runtime or added as a game dependency. The long-grass sheet is hand-authored pixel artwork in SVG format.
 
 - `characters/boy-eight-directions.png`: the only player sheet, a transparent 72 × 160 PNG containing 24 × 32 frames in three columns and five rows. Rows face down, left, up, down-left and up-left; columns are idle and two walking poses. Right-facing directions mirror the corresponding left-facing row through `src/content/game.json`. All frames have a common foot baseline, with one transparent pixel below the feet. Edit or replace in Piskel or Aseprite, keeping the layout and alignment; update the JSON if changing the layout.
 - `terrain/grass.png`: repeating 128 × 128 PNG. Edit or replace with a seamless terrain tile.
+- `terrain/long-grass.svg`: transparent 30 × 12 sheet containing three 10 × 12 pixel tufts, each with three or four uneven strands. Uses darker grass green (#4e7632) with subtle accents (#5c863b). SVG paths follow whole pixels and render with crisp edges. Edit in a vector editor or replace with a transparent PNG sprite sheet; `world.longGrass` in `src/content/game.json` controls the path, frame dimensions, variant count and seeded placement. Frames read left to right. Tufts are static backdrop decoration and always render beneath the player and shadow.
 
 The player is a boy with dark brown curtain hair parted in the centre, a white T-shirt with a red dragon on the back, black jeans, and black Vans-style skate shoes with white soles. At this resolution, the dragon and shoe details are suggestive pixel accents. The superseded farmer sheets are available in Git history and are not needed by the game.
 

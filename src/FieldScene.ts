@@ -16,6 +16,10 @@ export class FieldScene extends Phaser.Scene {
 
   preload() {
     this.load.image('grass', content.world.ground);
+    this.load.spritesheet('long-grass', content.world.longGrass.spriteSheet, {
+      frameWidth: content.world.longGrass.frameWidth,
+      frameHeight: content.world.longGrass.frameHeight,
+    });
     this.load.spritesheet('player', content.player.spriteSheet, {
       frameWidth: content.player.frameWidth,
       frameHeight: content.player.frameHeight,
@@ -25,6 +29,18 @@ export class FieldScene extends Phaser.Scene {
   create() {
     const { world, player } = content;
     this.add.tileSprite(0, 0, world.width, world.height, 'grass').setOrigin(0);
+    const grass = world.longGrass;
+    const random = new Phaser.Math.RandomDataGenerator([grass.seed]);
+    // One possible tuft per cell keeps clumps sparse; the seed preserves the layout on reload.
+    for (let y = 0; y + grass.frameHeight <= world.height; y += grass.cellSize) {
+      for (let x = 0; x + grass.frameWidth <= world.width; x += grass.cellSize) {
+        if (random.frac() >= grass.density) continue;
+        const offsetX = random.integerInRange(0, Math.min(grass.cellSize, world.width - x) - grass.frameWidth);
+        const offsetY = random.integerInRange(0, Math.min(grass.cellSize, world.height - y) - grass.frameHeight);
+        this.add.image(x + offsetX, y + offsetY, 'long-grass', random.integerInRange(0, grass.variants - 1))
+          .setOrigin(0);
+      }
+    }
 
     for (const [direction, frames] of Object.entries(player.animations)) {
       this.anims.create({

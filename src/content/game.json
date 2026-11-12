@@ -2,7 +2,16 @@
   "world": {
     "width": 480,
     "height": 320,
-    "ground": "/assets/terrain/grass.png"
+    "ground": "/assets/terrain/grass.png",
+    "longGrass": {
+      "spriteSheet": "/assets/terrain/long-grass.svg",
+      "frameWidth": 10,
+      "frameHeight": 12,
+      "variants": 3,
+      "cellSize": 32,
+      "density": 0.3,
+      "seed": "danville-grass-4"
+    }
   },
   "player": {
     "spriteSheet": "/assets/characters/boy-eight-directions.png",
