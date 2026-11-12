@@ -8,10 +8,13 @@ The scene is an empty green field with a subtle pixel grass texture and one boy 
 
 Arrow keys move the player in eight directions; two adjacent keys select a diagonal facing and move at the same overall speed as a single key. Opposing keys cancel one another. Walking animates in the facing direction; releasing the keys leaves the player standing and facing the last direction, including diagonals. Releasing one of two adjacent keys returns to the remaining key's cardinal facing. Right-facing views mirror the corresponding left-facing artwork, including both diagonal pairs. Movement uses elapsed time and is bounded so the entire sprite remains within the field. Long frames are limited to 50 ms of movement to prevent jumps after interruptions. The camera is fixed. There are no interactions, obstacles, saving, audio or touch controls.
 
+Pressing P pauses gameplay and freezes the field, including walking animations. A dimmed overlay shows two vertically stacked buttons centred in the game view: Play above Options. Clicking Play or pressing P again closes the menu and resumes gameplay. Options is a disabled placeholder for future settings. Holding P does not repeatedly toggle the menu.
+
 ## Architecture
 
 - `src/main.ts` creates the Phaser game and its scaling settings.
 - `src/FieldScene.ts` loads assets, reads keyboard input and renders the ground, player and shadow.
+- `src/PauseScene.ts` displays the pause menu while the field scene is paused, and resumes it on request. Both scenes share the game's scaling settings.
 - `src/movement.ts` holds the movement and boundary rules independently of Phaser. Node's built-in test runner verifies these rules with `npm test`.
 - `src/content/game.json` defines field dimensions, ground image, player appearance, animation frame indices, walking speed and spawn position.
 - `public/assets/` contains PNG images and a pixel-art SVG sheet loaded by Phaser. All assets are local; gameplay makes no external service calls.
