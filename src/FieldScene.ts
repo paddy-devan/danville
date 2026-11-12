@@ -7,6 +7,7 @@ export class FieldScene extends Phaser.Scene {
   private player!: Phaser.GameObjects.Sprite;
   private shadow!: Phaser.GameObjects.Ellipse;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
+  private pauseKey!: Phaser.Input.Keyboard.Key;
   private state!: PlayerState;
   private bounds!: Bounds;
 
@@ -63,12 +64,18 @@ export class FieldScene extends Phaser.Scene {
       .setOrigin(0.5, 1);
 
     this.cursors = this.input.keyboard!.createCursorKeys();
+    this.pauseKey = this.input.keyboard!.addKey('P');
     // Phaser clears held keys on blur, preventing movement sticking after a tab switch.
     this.input.keyboard!.addCapture(['UP', 'DOWN', 'LEFT', 'RIGHT']);
   }
 
   update(_time: number, delta: number) {
     if (!this.cursors) return;
+    if (Phaser.Input.Keyboard.JustDown(this.pauseKey) && !this.pauseKey.originalEvent.repeat) {
+      this.scene.launch('pause');
+      this.scene.pause();
+      return;
+    }
 
     this.state = movePlayer(this.state, {
       x: Number(this.cursors.right.isDown) - Number(this.cursors.left.isDown),
