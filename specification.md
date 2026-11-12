@@ -14,7 +14,7 @@ Arrow keys move the player in eight directions; two adjacent keys select a diago
 - `src/FieldScene.ts` loads assets, reads keyboard input and renders the ground, player and shadow.
 - `src/movement.ts` holds the movement and boundary rules independently of Phaser. Node's built-in test runner verifies these rules with `npm test`.
 - `src/content/game.json` defines field dimensions, ground image, player appearance, animation frame indices, walking speed and spawn position.
-- `public/assets/` contains ordinary PNG images loaded by Phaser. All assets are local; gameplay makes no external service calls.
+- `public/assets/` contains PNG images and a pixel-art SVG sheet loaded by Phaser. All assets are local; gameplay makes no external service calls.
 
 ## Editing content
 
@@ -22,7 +22,9 @@ Change `src/content/game.json` to adjust movement speed, spawn location or field
 
 The player sheet at `public/assets/characters/boy-eight-directions.png` uses 24 × 32 pixel frames arranged in three columns and five rows. Rows face down, left, up, down-left and up-left; columns show idle, one step and the other step. Frame indices start at zero and read across each row. The JSON maps all eight directions to idle frames, walking sequences and a `flipX` flag. Left/right pairs share frame indices, with `flipX: true` for the right-facing direction: eight views need only five sets of artwork. Replace the PNG with a matching sheet exported from Piskel or Aseprite, or change the frame sizes, mappings and flip flags in the JSON for a different layout. Frames must have consistent foot alignment and transparent padding. Mirroring also flips asymmetric details such as accessories, so characters that need consistent handedness can instead map directions to separate frames.
 
-The grass image at `public/assets/terrain/grass.png` repeats across the field. Replace it with another seamless tile or change its path in the JSON. Artwork provenance and source prompts live in `public/assets/ASSETS.md`. Adding new kinds of gameplay still requires code; changing these existing assets and settings does not.
+The grass image at `public/assets/terrain/grass.png` repeats across the field. Replace it with another seamless tile or change its path in the JSON. A sparse layer of darker long-grass tufts sits above the ground and beneath the player and shadow. Tufts are decoration only, with no collision, interaction or animation. Placement happens once when the scene starts: each placement cell has a configurable chance of containing one tuft, randomly positioned within that cell and kept inside the field. The seed produces the same layout on reload. The default field contains roughly 20–30 tufts.
+
+`world.longGrass` in `src/content/game.json` defines the tuft sheet, frame dimensions, number of variants, placement cell size, density (a probability from 0 to 1) and seed. The transparent sheet at `public/assets/terrain/long-grass.svg` has three 10 × 12 pixel frames in a single row. It can be edited as SVG or replaced with a transparent PNG sheet exported from Piskel or Aseprite; update the JSON path and frame settings to match. Change the seed for a different layout, density for more or fewer tufts, or cell size for their spacing. Keep the cell size at least as large as both frame dimensions. Artwork provenance and source prompts live in `public/assets/ASSETS.md`. Adding new kinds of gameplay still requires code; changing these existing assets and settings does not.
 
 ## Local checks
 
