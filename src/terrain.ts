@@ -1,3 +1,6 @@
+import { isOnPath } from './paths.ts';
+import type { PathNetwork } from './paths.ts';
+
 interface GrassSettings {
   seed: string;
   cellSize: number;
@@ -45,7 +48,7 @@ export function visibleChunks(
 }
 
 /** Each cell has its own random sequence, independent of which chunk loads first. */
-export function grassInChunk(chunk: TerrainChunk, world: TerrainSettings) {
+export function grassInChunk(chunk: TerrainChunk, world: TerrainSettings, paths?: PathNetwork) {
   const grass = world.longGrass;
   const tufts: { x: number; y: number; frame: number }[] = [];
   for (let y = Math.ceil(chunk.y / grass.cellSize) * grass.cellSize; y < chunk.y + chunk.height; y += grass.cellSize) {
@@ -63,8 +66,11 @@ export function grassInChunk(chunk: TerrainChunk, world: TerrainSettings) {
       const spaceX = Math.min(grass.cellSize, world.width - x) - grass.frameWidth;
       const spaceY = Math.min(grass.cellSize, world.height - y) - grass.frameHeight;
       if (spaceX < 0 || spaceY < 0 || random() >= grass.density) continue;
-      tufts.push({ x: x + Math.floor(random() * (spaceX + 1)),
-        y: y + Math.floor(random() * (spaceY + 1)), frame: Math.floor(random() * grass.variants) });
+      const tuft = { x: x + Math.floor(random() * (spaceX + 1)),
+        y: y + Math.floor(random() * (spaceY + 1)), frame: Math.floor(random() * grass.variants) };
+      if (paths && isOnPath(tuft.x + grass.frameWidth / 2, tuft.y + grass.frameHeight / 2,
+        paths, Math.hypot(grass.frameWidth, grass.frameHeight) / 2 + 2)) continue;
+      tufts.push(tuft);
     }
   }
   return tufts;

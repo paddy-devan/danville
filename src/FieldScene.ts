@@ -3,6 +3,8 @@ import content from './content/game.json';
 import { movePlayer } from './movement';
 import type { Bounds, PlayerState } from './movement';
 import { grassInChunk, visibleChunks } from './terrain';
+import { buildPaths } from './paths';
+import type { TerrainChunk } from './terrain';
 
 export class FieldScene extends Phaser.Scene {
   private player!: Phaser.GameObjects.Sprite;
@@ -12,6 +14,7 @@ export class FieldScene extends Phaser.Scene {
   private state!: PlayerState;
   private bounds!: Bounds;
   private terrain = new Map<string, Phaser.GameObjects.GameObject[]>();
+  private paths = buildPaths(content.world.paths, content.world);
 
   constructor() {
     super('field');
@@ -19,6 +22,7 @@ export class FieldScene extends Phaser.Scene {
 
   preload() {
     this.load.image('grass', content.world.ground);
+    this.load.image('cobblestone', content.world.paths.texture);
     this.load.spritesheet('long-grass', content.world.longGrass.spriteSheet, {
       frameWidth: content.world.longGrass.frameWidth,
       frameHeight: content.world.longGrass.frameHeight,
@@ -32,7 +36,10 @@ export class FieldScene extends Phaser.Scene {
   create() {
     const { world, player } = content;
     this.terrain.clear();
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.terrain.clear());
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      for (const key of this.terrain.keys()) this.textures.remove(`path-${key}`);
+      this.terrain.clear();
+    });
 
     for (const [direction, frames] of Object.entries(player.animations)) {
       this.anims.create({
@@ -105,6 +112,7 @@ export class FieldScene extends Phaser.Scene {
     for (const [key, objects] of this.terrain) {
       if (needed.has(key)) continue;
       for (const object of objects) object.destroy();
+      this.textures.remove(`path-${key}`);
       this.terrain.delete(key);
     }
     for (const chunk of chunks) {
@@ -112,9 +120,35 @@ export class FieldScene extends Phaser.Scene {
       const ground = this.add.tileSprite(chunk.x, chunk.y, chunk.width, chunk.height, 'grass').setOrigin(0);
       // World-aligned texture offsets also keep non-tile-sized chunks seamless.
       ground.setTilePosition(chunk.x, chunk.y);
-      const tufts = grassInChunk(chunk, content.world).map((tuft) =>
+      const path = this.createPathChunk(chunk);
+      const tufts = grassInChunk(chunk, content.world, this.paths).map((tuft) =>
         this.add.image(tuft.x, tuft.y, 'long-grass', tuft.frame).setOrigin(0).setDepth(1));
-      this.terrain.set(chunk.key, [ground, ...tufts]);
+      this.terrain.set(chunk.key, [ground, path, ...tufts]);
     }
+  }
+
+  private createPathChunk(chunk: TerrainChunk) {
+    const texture = this.textures.createCanvas(`path-${chunk.key}`, chunk.width, chunk.height)!;
+    const context = texture.context;
+    // Draw in world coordinates, so both the pattern and curves meet at chunk boundaries.
+    context.translate(-chunk.x, -chunk.y);
+    context.imageSmoothingEnabled = false;
+    context.lineCap = 'round';
+    context.lineJoin = 'round';
+    context.beginPath();
+    for (const route of this.paths.routes) {
+      if (route.length < 2) continue;
+      context.moveTo(route[0].x, route[0].y);
+      for (const point of route.slice(1)) context.lineTo(point.x, point.y);
+    }
+    context.strokeStyle = '#777353';
+    context.lineWidth = this.paths.width + 4;
+    context.stroke();
+    context.strokeStyle = context.createPattern(
+      this.textures.get('cobblestone').getSourceImage() as HTMLImageElement, 'repeat')!;
+    context.lineWidth = this.paths.width;
+    context.stroke();
+    texture.refresh();
+    return this.add.image(chunk.x, chunk.y, texture.key).setOrigin(0).setDepth(0.5);
   }
 }
