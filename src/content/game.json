@@ -1,5 +1,15 @@
 {
   "viewport": { "width": 480, "height": 320 },
+  "levels": [
+    {
+      "id": "grass-arena-1",
+      "name": "Grass Arena - Level 1",
+      "mapEnabled": false,
+      "width": 960,
+      "height": 640,
+      "spawn": { "x": 480, "y": 320 }
+    }
+  ],
   "map": {
     "image": "/assets/maps/arena-map.png",
     "arenas": [
@@ -14,6 +24,11 @@
     "width": 2400,
     "height": 1600,
     "chunkSize": 256,
+    "levelEntrance": {
+      "offsetFromSpawn": { "x": 48, "y": 0 },
+      "radius": 10,
+      "scene": "grass-arena-1"
+    },
     "ground": "/assets/terrain/grass.png",
     "paths": {
       "texture": "/assets/terrain/cobblestone.svg",

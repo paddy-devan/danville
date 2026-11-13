@@ -19,5 +19,5 @@ new Phaser.Game({
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [FieldScene, PauseScene, MapScene],
+  scene: [FieldScene, ...content.levels.map((level) => new FieldScene(level.id, level)), PauseScene, MapScene],
 });
