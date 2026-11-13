@@ -57,8 +57,10 @@ export class FieldScene extends Phaser.Scene {
       top: player.frameHeight + 4,
       bottom: world.height - 4,
     };
-    this.shadow = this.add.ellipse(this.state.x, this.state.y - 2, 16, 5, 0x2c502c, 0.28).setDepth(2);
-    this.player = this.add.sprite(this.state.x, this.state.y, 'player', player.animations.down.idle)
+    const x = Math.round(this.state.x);
+    const y = Math.round(this.state.y);
+    this.shadow = this.add.ellipse(x, y - 2, 16, 5, 0x2c502c, 0.28).setDepth(2);
+    this.player = this.add.sprite(x, y, 'player', player.animations.down.idle)
       .setOrigin(0.5, 1).setDepth(3);
 
     this.cameras.main.setBounds(0, 0, world.width, world.height);
@@ -83,8 +85,12 @@ export class FieldScene extends Phaser.Scene {
       y: Number(this.cursors.down.isDown) - Number(this.cursors.up.isDown),
     }, Math.min(delta, 50) / 1000, content.player.speed, this.bounds);
 
-    this.player.setPosition(this.state.x, this.state.y);
-    this.shadow.setPosition(this.state.x, this.state.y - 2);
+    // Keep fractional movement in state, but align the sprite, shadow and camera
+    // to the same pixel grid before Phaser transforms individual terrain objects.
+    const x = Math.round(this.state.x);
+    const y = Math.round(this.state.y);
+    this.player.setPosition(x, y);
+    this.shadow.setPosition(x, y - 2);
     this.updateTerrain();
     const animation = content.player.animations[this.state.facing];
     this.player.setFlipX(animation.flipX);
