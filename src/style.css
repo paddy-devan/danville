@@ -7,6 +7,97 @@
 
 * { box-sizing: border-box; }
 
+:root.map-open {
+  background: #72a449;
+}
+
+.map-open #controls {
+  visibility: hidden;
+}
+
+.world-map {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  background-color: #243c2b;
+  image-rendering: pixelated;
+}
+
+.world-map[open] {
+  display: grid;
+  place-items: center;
+}
+
+.map-landscape {
+  position: relative;
+  width: min(100vw, calc(100dvh * 1.5));
+  height: min(100dvh, calc(100vw / 1.5));
+  background-size: 100% 100%;
+  container-type: inline-size;
+}
+
+.world-map::backdrop {
+  background: #243c2b;
+}
+
+.map-arena {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  padding: 8px;
+  border: clamp(2px, 0.35vw, 4px) solid #293024;
+  border-radius: 50%;
+  overflow: hidden;
+  isolation: isolate;
+  background: transparent;
+  box-shadow: 0 0 0 1px #f5f0d48c, 0 3px 5px #16201855;
+  cursor: pointer;
+  font-family: monospace;
+  font-size: clamp(11px, 1.65cqw, 22px);
+  font-weight: 700;
+  line-height: 1.4;
+  color: #fffde9;
+  text-align: center;
+  text-shadow: 1px 1px 1px #172419, -1px -1px 1px #172419,
+    1px -1px 1px #172419, -1px 1px 1px #172419, 0 2px 3px #172419;
+}
+
+.map-arena-terrain {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-repeat: repeat;
+  filter: saturate(0.55);
+  transition: filter 150ms ease-out;
+}
+
+.map-arena:hover .map-arena-terrain,
+.map-arena:focus-visible .map-arena-terrain {
+  filter: saturate(1.5);
+}
+
+.map-arena:focus-visible,
+.map-arena[aria-pressed='true'] {
+  outline: 3px solid #fffde9;
+  outline-offset: 3px;
+}
+
+.map-arena-label {
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-arena-terrain { transition: none; }
+}
+
 html, body {
   width: 100%;
   height: 100%;

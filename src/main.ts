@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { FieldScene } from './FieldScene';
 import { PauseScene } from './PauseScene';
+import { MapScene } from './MapScene';
 import content from './content/game.json';
 import './style.css';
 
@@ -18,5 +19,5 @@ new Phaser.Game({
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [FieldScene, PauseScene],
+  scene: [FieldScene, PauseScene, MapScene],
 });
