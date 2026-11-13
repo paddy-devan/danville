@@ -4,13 +4,13 @@ import { PauseScene } from './PauseScene';
 import content from './content/game.json';
 import './style.css';
 
-document.documentElement.style.setProperty('--game-aspect', String(content.world.width / content.world.height));
+document.documentElement.style.setProperty('--game-aspect', String(content.viewport.width / content.viewport.height));
 
 new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'game',
-  width: content.world.width,
-  height: content.world.height,
+  width: content.viewport.width,
+  height: content.viewport.height,
   backgroundColor: '#72a449',
   pixelArt: true,
   roundPixels: true,
