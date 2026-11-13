@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import content from './content/game.json';
 import { movePlayer } from './movement';
 import type { Bounds, PlayerState } from './movement';
+import { grassInChunk, visibleChunks } from './terrain';
 
 export class FieldScene extends Phaser.Scene {
   private player!: Phaser.GameObjects.Sprite;
@@ -10,6 +11,7 @@ export class FieldScene extends Phaser.Scene {
   private pauseKey!: Phaser.Input.Keyboard.Key;
   private state!: PlayerState;
   private bounds!: Bounds;
+  private terrain = new Map<string, Phaser.GameObjects.GameObject[]>();
 
   constructor() {
     super('field');
@@ -29,19 +31,8 @@ export class FieldScene extends Phaser.Scene {
 
   create() {
     const { world, player } = content;
-    this.add.tileSprite(0, 0, world.width, world.height, 'grass').setOrigin(0);
-    const grass = world.longGrass;
-    const random = new Phaser.Math.RandomDataGenerator([grass.seed]);
-    // One possible tuft per cell keeps clumps sparse; the seed preserves the layout on reload.
-    for (let y = 0; y + grass.frameHeight <= world.height; y += grass.cellSize) {
-      for (let x = 0; x + grass.frameWidth <= world.width; x += grass.cellSize) {
-        if (random.frac() >= grass.density) continue;
-        const offsetX = random.integerInRange(0, Math.min(grass.cellSize, world.width - x) - grass.frameWidth);
-        const offsetY = random.integerInRange(0, Math.min(grass.cellSize, world.height - y) - grass.frameHeight);
-        this.add.image(x + offsetX, y + offsetY, 'long-grass', random.integerInRange(0, grass.variants - 1))
-          .setOrigin(0);
-      }
-    }
+    this.terrain.clear();
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.terrain.clear());
 
     for (const [direction, frames] of Object.entries(player.animations)) {
       this.anims.create({
@@ -59,9 +50,12 @@ export class FieldScene extends Phaser.Scene {
       top: player.frameHeight + 4,
       bottom: world.height - 4,
     };
-    this.shadow = this.add.ellipse(this.state.x, this.state.y - 2, 16, 5, 0x2c502c, 0.28);
+    this.shadow = this.add.ellipse(this.state.x, this.state.y - 2, 16, 5, 0x2c502c, 0.28).setDepth(2);
     this.player = this.add.sprite(this.state.x, this.state.y, 'player', player.animations.down.idle)
-      .setOrigin(0.5, 1);
+      .setOrigin(0.5, 1).setDepth(3);
+
+    this.cameras.main.setBounds(0, 0, world.width, world.height);
+    this.updateTerrain();
 
     this.cursors = this.input.keyboard!.createCursorKeys();
     this.pauseKey = this.input.keyboard!.addKey('P');
@@ -84,6 +78,7 @@ export class FieldScene extends Phaser.Scene {
 
     this.player.setPosition(this.state.x, this.state.y);
     this.shadow.setPosition(this.state.x, this.state.y - 2);
+    this.updateTerrain();
     const animation = content.player.animations[this.state.facing];
     this.player.setFlipX(animation.flipX);
 
@@ -92,6 +87,28 @@ export class FieldScene extends Phaser.Scene {
     } else {
       this.player.stop();
       this.player.setFrame(animation.idle);
+    }
+  }
+
+  private updateTerrain() {
+    const camera = this.cameras.main;
+    camera.centerOn(this.player.x, this.player.y);
+    const chunks = visibleChunks({ x: camera.scrollX, y: camera.scrollY,
+      width: camera.width, height: camera.height }, content.world);
+    const needed = new Set(chunks.map((chunk) => chunk.key));
+    for (const [key, objects] of this.terrain) {
+      if (needed.has(key)) continue;
+      for (const object of objects) object.destroy();
+      this.terrain.delete(key);
+    }
+    for (const chunk of chunks) {
+      if (this.terrain.has(chunk.key)) continue;
+      const ground = this.add.tileSprite(chunk.x, chunk.y, chunk.width, chunk.height, 'grass').setOrigin(0);
+      // World-aligned texture offsets also keep non-tile-sized chunks seamless.
+      ground.setTilePosition(chunk.x, chunk.y);
+      const tufts = grassInChunk(chunk, content.world).map((tuft) =>
+        this.add.image(tuft.x, tuft.y, 'long-grass', tuft.frame).setOrigin(0).setDepth(1));
+      this.terrain.set(chunk.key, [ground, ...tufts]);
     }
   }
 }
