@@ -10,6 +10,8 @@ Arrow keys move the player in eight directions; two adjacent keys select a diago
 
 Pressing P pauses gameplay and freezes the field, including walking animations. A dimmed overlay shows two vertically stacked buttons centred in the game view: Play above Options. Clicking Play or pressing P again closes the menu and resumes gameplay. Options is a disabled placeholder for future settings. Holding P does not repeatedly toggle the menu.
 
+Pressing M during gameplay opens a plain white map placeholder covering the entire browser view, including any letterboxing, and hides the controls hint. The field and walking animations remain paused until M is pressed again to close the map and resume gameplay. Holding M does not repeatedly toggle the map. The pause menu and map are separate screens; neither opens while the other is active.
+
 ## Architecture
 
 - `src/main.ts` creates the Phaser game and its scaling settings.
@@ -17,6 +19,7 @@ Pressing P pauses gameplay and freezes the field, including walking animations. 
 - `src/terrain.ts` selects buffered terrain chunks and generates seeded grass placement independently of Phaser. Only chunks covering the camera view and a one-chunk border are loaded; distant chunks are destroyed and regenerated on return. Ground tiles and tuft images share loaded textures. Generation and memory use depend on the view size rather than the total field size.
 - `src/paths.ts` rounds route bends with sampled quadratic curves that meet adjacent straight sections tangentially, without overshooting the control points. Curved connections round the inside corners where open route ends meet neighbouring paths. It checks path clearance independently of Phaser. The scene draws these curves with a world-aligned cobblestone pattern and narrow earth edging into disposable chunk textures. Grass clearance uses the same curves, including junction connections, preventing tufts from overlapping paths. Path textures are released when their chunks unload.
 - `src/PauseScene.ts` displays the pause menu while the field scene is paused, and resumes it on request. Both scenes share the game's scaling settings.
+- `src/MapScene.ts` displays the white map placeholder while the field scene is paused. It shares the game's scaling settings; a CSS class extends the white background across the browser view and hides the HTML controls hint until the map closes.
 - `src/movement.ts` holds the movement and boundary rules independently of Phaser. Node's built-in test runner verifies these rules with `npm test`.
 - `src/content/game.json` defines viewport and field dimensions separately, terrain chunk size, ground, path and tall-grass settings, player appearance, animation frame indices, walking speed and spawn position.
 - `public/assets/` contains PNG images and a pixel-art SVG sheet loaded by Phaser. All assets are local; gameplay makes no external service calls.
