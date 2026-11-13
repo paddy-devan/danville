@@ -13,7 +13,7 @@ Pressing P pauses gameplay and freezes the field, including walking animations. 
 ## Architecture
 
 - `src/main.ts` creates the Phaser game and its scaling settings.
-- `src/FieldScene.ts` loads assets, reads keyboard input, follows the player with the camera and renders nearby terrain, player and shadow.
+- `src/FieldScene.ts` loads assets, reads keyboard input, follows the player with the camera and renders nearby terrain, player and shadow. Movement state retains fractional positions for frame-rate-independent speed; the drawn player and shadow use the same whole-pixel position, which the camera follows so terrain scrolls on a consistent pixel grid.
 - `src/terrain.ts` selects buffered terrain chunks and generates seeded grass placement independently of Phaser. Only chunks covering the camera view and a one-chunk border are loaded; distant chunks are destroyed and regenerated on return. Ground tiles and tuft images share loaded textures. Generation and memory use depend on the view size rather than the total field size.
 - `src/PauseScene.ts` displays the pause menu while the field scene is paused, and resumes it on request. Both scenes share the game's scaling settings.
 - `src/movement.ts` holds the movement and boundary rules independently of Phaser. Node's built-in test runner verifies these rules with `npm test`.
