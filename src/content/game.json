@@ -7,7 +7,21 @@
       "mapEnabled": false,
       "width": 960,
       "height": 640,
-      "spawn": { "x": 480, "y": 320 }
+      "spawn": { "x": 480, "y": 320 },
+      "tent": {
+        "returnScene": "field",
+        "returnArea": { "left": -22, "right": -18, "top": -8, "bottom": 8 },
+        "image": "/assets/props/green-tent-side.png",
+        "width": 128,
+        "height": 96,
+        "offsetFromSpawn": { "x": 0, "y": 32 },
+        "collision": {
+          "bounds": { "left": -32, "right": 48, "top": -18, "bottom": 18 },
+          "wallThickness": 4,
+          "doorway": { "top": -12, "bottom": 12 },
+          "playerRadius": 6
+        }
+      }
     }
   ],
   "map": {

@@ -5,6 +5,9 @@ import type { Bounds, PlayerState } from './movement';
 import { grassInChunk, visibleChunks } from './terrain';
 import { buildPaths } from './paths';
 import type { TerrainChunk } from './terrain';
+import { outlineSpriteSheet } from './spriteOutline';
+import { tentWalls } from './tent';
+import type { TentCollision } from './tent';
 
 interface LevelSettings {
   width: number;
@@ -14,6 +17,15 @@ interface LevelSettings {
   mapEnabled?: boolean;
   paths?: typeof content.world.paths;
   levelEntrance?: typeof content.world.levelEntrance;
+  tent?: {
+    returnScene?: string;
+    returnArea?: Bounds;
+    image: string;
+    width: number;
+    height: number;
+    offsetFromSpawn: { x: number; y: number };
+    collision?: TentCollision;
+  };
 }
 
 type WorldSettings = Omit<typeof content.world, 'paths' | 'levelEntrance'> & {
@@ -32,15 +44,22 @@ export class FieldScene extends Phaser.Scene {
   private terrain = new Map<string, Phaser.GameObjects.GameObject[]>();
   private readonly world: WorldSettings;
   private readonly paths;
+  private tent?: Phaser.GameObjects.Image;
+  private playerOutline?: Phaser.GameObjects.Sprite;
+  private playerPixels?: ImageData;
+  private tentPixels?: ImageData;
+  private readonly obstacles: Bounds[];
 
   constructor(key = 'field', private readonly level?: LevelSettings) {
     super(key);
     this.world = level ? { ...content.world, width: level.width, height: level.height,
       paths: level.paths, levelEntrance: level.levelEntrance } : content.world;
     this.paths = this.world.paths ? buildPaths(this.world.paths, this.world) : undefined;
+    this.obstacles = level?.tent?.collision ? tentWalls(level.spawn, level.tent.collision) : [];
   }
 
   preload() {
+    if (this.level?.tent) this.load.image(`tent-${this.sys.settings.key}`, this.level.tent.image);
     this.load.image('grass', this.world.ground);
     if (this.world.paths) this.load.image('cobblestone', this.world.paths.texture);
     this.load.spritesheet('long-grass', this.world.longGrass.spriteSheet, {
@@ -87,6 +106,7 @@ export class FieldScene extends Phaser.Scene {
     this.shadow = this.add.ellipse(x, y - 2, 16, 5, 0x2c502c, 0.28).setDepth(2);
     this.player = this.add.sprite(x, y, 'player', player.animations.down.idle)
       .setOrigin(0.5, 1).setDepth(3);
+    if (this.level?.tent) this.createTent(spawn);
 
     const entrance = world.levelEntrance;
     if (entrance) {
@@ -144,7 +164,18 @@ export class FieldScene extends Phaser.Scene {
     this.state = movePlayer(this.state, {
       x: Number(this.cursors.right.isDown) - Number(this.cursors.left.isDown),
       y: Number(this.cursors.down.isDown) - Number(this.cursors.up.isDown),
-    }, Math.min(delta, 50) / 1000, content.player.speed, this.bounds);
+    }, Math.min(delta, 50) / 1000, content.player.speed, this.bounds, this.obstacles);
+
+    const { returnScene, returnArea } = this.level?.tent ?? {};
+    const spawn = this.level?.spawn;
+    if (returnScene && returnArea && spawn
+      && this.state.x >= spawn.x + returnArea.left && this.state.x <= spawn.x + returnArea.right
+      && this.state.y >= spawn.y + returnArea.top && this.state.y <= spawn.y + returnArea.bottom) {
+      this.scene.run(returnScene);
+      // A fresh arena visit starts inside the tent, rather than on the return trigger.
+      this.scene.stop();
+      return;
+    }
 
     // Keep fractional movement in state, but align the sprite, shadow and camera
     // to the same pixel grid before Phaser transforms individual terrain objects.
@@ -162,6 +193,79 @@ export class FieldScene extends Phaser.Scene {
       this.player.stop();
       this.player.setFrame(animation.idle);
     }
+    this.updateTentOcclusion();
+  }
+
+  private createTent(spawn: { x: number; y: number }) {
+    const settings = this.level!.tent!;
+    this.tent = this.add.image(spawn.x + settings.offsetFromSpawn.x,
+      spawn.y + settings.offsetFromSpawn.y, `tent-${this.sys.settings.key}`)
+      .setOrigin(0.5, 1).setDisplaySize(settings.width, settings.height)
+      .setDepth(4).setName('spawn-tent');
+
+    // Read sprite alpha once; the x-ray uses the real silhouette, not a rectangle.
+    const sheet = this.textures.get('player').getSourceImage() as HTMLImageElement;
+    const canvas = document.createElement('canvas');
+    canvas.width = sheet.width;
+    canvas.height = sheet.height;
+    const context = canvas.getContext('2d')!;
+    context.drawImage(sheet, 0, 0);
+    this.playerPixels = context.getImageData(0, 0, canvas.width, canvas.height);
+    const { frameWidth, frameHeight } = content.player;
+    if (!this.textures.exists('player-outline')) {
+      const texture = this.textures.createCanvas('player-outline', sheet.width, sheet.height)!;
+      const pixels = texture.context.createImageData(sheet.width, sheet.height);
+      pixels.data.set(outlineSpriteSheet(this.playerPixels.data, sheet.width, sheet.height,
+        frameWidth, frameHeight));
+      texture.context.putImageData(pixels, 0, 0);
+      let index = 0;
+      for (let y = 0; y < sheet.height; y += frameHeight) {
+        for (let x = 0; x < sheet.width; x += frameWidth) {
+          texture.add(index++, 0, x, y, frameWidth, frameHeight);
+        }
+      }
+      texture.refresh();
+    }
+
+    canvas.width = settings.width;
+    canvas.height = settings.height;
+    context.imageSmoothingEnabled = false;
+    context.drawImage(this.tent.texture.getSourceImage() as HTMLImageElement,
+      0, 0, settings.width, settings.height);
+    this.tentPixels = context.getImageData(0, 0, canvas.width, canvas.height);
+    this.playerOutline = this.add.sprite(this.player.x, this.player.y, 'player-outline', this.player.frame.name)
+      .setOrigin(0.5, 1).setDepth(6).setAlpha(0.85).setName('player-outline');
+    this.updateTentOcclusion();
+  }
+
+  private updateTentOcclusion() {
+    if (!this.tent || !this.playerOutline || !this.tentPixels || !this.playerPixels) return;
+    const player = this.player;
+    // Walking through the right doorway brings the player in front of its canvas.
+    const collision = this.level?.tent?.collision;
+    const pastDoor = collision && player.x >= this.level!.spawn.x + collision.bounds.right;
+    player.setDepth(player.y >= this.tent.y || pastDoor ? 5 : 3);
+    const { frameWidth, frameHeight } = content.player;
+    const left = this.tent.x - this.tent.displayWidth / 2;
+    const top = this.tent.y - this.tent.displayHeight;
+    let covered = false;
+    if (player.depth < this.tent.depth) {
+      for (let y = 0; y < frameHeight && !covered; y++) {
+        for (let x = 0; x < frameWidth; x++) {
+          const source = ((player.frame.cutY + y) * this.playerPixels.width + player.frame.cutX + x) * 4;
+          if (!this.playerPixels.data[source + 3]) continue;
+          const tx = Math.floor(player.x - frameWidth / 2 + (player.flipX ? frameWidth - 1 - x : x) - left);
+          const ty = Math.floor(player.y - frameHeight + y - top);
+          if (tx >= 0 && tx < this.tentPixels.width && ty >= 0 && ty < this.tentPixels.height
+            && this.tentPixels.data[(ty * this.tentPixels.width + tx) * 4 + 3] > 127) {
+            covered = true;
+            break;
+          }
+        }
+      }
+    }
+    this.playerOutline.setPosition(player.x, player.y).setFrame(player.frame.name)
+      .setFlipX(player.flipX).setVisible(covered);
   }
 
   private updateTerrain() {
