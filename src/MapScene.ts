@@ -46,6 +46,11 @@ export class MapScene extends Phaser.Scene {
       label.textContent = arena.label;
       button.append(terrain, label);
       button.addEventListener('click', () => {
+        if (arena.scene) {
+          this.scene.resume(arena.scene);
+          this.scene.stop();
+          return;
+        }
         for (const other of map.querySelectorAll('.map-arena')) {
           other.setAttribute('aria-pressed', String(other === button));
         }

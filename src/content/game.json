@@ -6,7 +6,7 @@
       { "id": "woodlands", "label": "Woodland", "x": 5, "y": 8, "width": 19, "height": 27 },
       { "id": "city", "label": "City", "x": 54, "y": 9, "width": 42, "height": 46 },
       { "id": "town", "label": "Town", "x": 27, "y": 36, "width": 24, "height": 30 },
-      { "id": "grassland", "label": "Grassland", "x": 10, "y": 62, "width": 20, "height": 26, "texture": "ground" },
+      { "id": "grassland", "label": "Grassland", "x": 10, "y": 62, "width": 20, "height": 26, "texture": "ground", "scene": "field" },
       { "id": "beach", "label": "Beach", "x": 52, "y": 74, "width": 46, "height": 24 }
     ]
   },
