@@ -3,6 +3,8 @@ import test from 'node:test';
 import { movePlayer } from '../src/movement.ts';
 import type { PlayerState } from '../src/movement.ts';
 import { tentWalls } from '../src/tent.ts';
+import { readFileSync } from 'node:fs';
+import { buildPaths, isOnPath } from '../src/paths.ts';
 
 const spawn = { x: 100, y: 100 };
 const settings = {
@@ -62,4 +64,24 @@ test('tent walls also block entry from outside and stop large movement steps', (
   assert.equal(walk(above, { x: 0, y: 1 }).y, 76);
   assert.equal(movePlayer(start, { x: -1, y: 0 }, 10, 72, bounds, walls).x, 78);
   assert.equal(movePlayer(start, { x: 0, y: -1 }, 10, 72, bounds, walls).y, 92);
+});
+
+test('the configured campsite spawn can exit right onto the path without crossing its return area', () => {
+  const content = JSON.parse(readFileSync(new URL('../src/content/game.json', import.meta.url), 'utf8'));
+  const level = content.levels[0];
+  const { tent, spawn } = level;
+  const obstacles = tentWalls(spawn, tent.collision);
+  const limits = { left: content.player.frameWidth / 2 + 4,
+    right: level.width - content.player.frameWidth / 2 - 4,
+    top: content.player.frameHeight + 4, bottom: level.height - 4 };
+  const paths = buildPaths(level.paths === true ? content.world.paths : level.paths, level);
+  let state: PlayerState = { ...spawn, facing: 'right', moving: false };
+  assert.ok(spawn.x - tent.width / 2 >= 0, 'tent artwork fits inside the western map edge');
+  for (let frame = 0; frame < 60; frame++) {
+    state = movePlayer(state, { x: 1, y: 0 }, 1 / 60, content.player.speed, limits, obstacles);
+    assert.ok(state.x > spawn.x + tent.returnArea.right);
+  }
+  assert.ok(state.x > spawn.x + tent.collision.bounds.right + tent.collision.playerRadius);
+  assert.equal(state.y, spawn.y);
+  assert.ok(isOnPath(state.x, state.y, paths), 'the doorway leads onto the campsite path');
 });

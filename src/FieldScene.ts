@@ -15,7 +15,7 @@ interface LevelSettings {
   spawn: { x: number; y: number };
   name: string;
   mapEnabled?: boolean;
-  paths?: typeof content.world.paths;
+  paths?: typeof content.world.paths | boolean;
   levelEntrance?: typeof content.world.levelEntrance;
   tent?: {
     returnScene?: string;
@@ -53,7 +53,8 @@ export class FieldScene extends Phaser.Scene {
   constructor(key = 'field', private readonly level?: LevelSettings) {
     super(key);
     this.world = level ? { ...content.world, width: level.width, height: level.height,
-      paths: level.paths, levelEntrance: level.levelEntrance } : content.world;
+      paths: level.paths === true ? content.world.paths : level.paths || undefined,
+      levelEntrance: level.levelEntrance } : content.world;
     this.paths = this.world.paths ? buildPaths(this.world.paths, this.world) : undefined;
     this.obstacles = level?.tent?.collision ? tentWalls(level.spawn, level.tent.collision) : [];
   }
@@ -61,7 +62,7 @@ export class FieldScene extends Phaser.Scene {
   preload() {
     if (this.level?.tent) this.load.image(`tent-${this.sys.settings.key}`, this.level.tent.image);
     this.load.image('grass', this.world.ground);
-    if (this.world.paths) this.load.image('cobblestone', this.world.paths.texture);
+    if (this.world.paths) this.load.image(`path-surface-${this.sys.settings.key}`, this.world.paths.texture);
     this.load.spritesheet('long-grass', this.world.longGrass.spriteSheet, {
       frameWidth: this.world.longGrass.frameWidth,
       frameHeight: this.world.longGrass.frameHeight,
@@ -311,11 +312,11 @@ export class FieldScene extends Phaser.Scene {
       context.moveTo(route[0].x, route[0].y);
       for (const point of route.slice(1)) context.lineTo(point.x, point.y);
     }
-    context.strokeStyle = '#777353';
+    context.strokeStyle = '#5e523e';
     context.lineWidth = paths.width + 4;
     context.stroke();
     context.strokeStyle = context.createPattern(
-      this.textures.get('cobblestone').getSourceImage() as HTMLImageElement, 'repeat')!;
+      this.textures.get(`path-surface-${this.sys.settings.key}`).getSourceImage() as HTMLImageElement, 'repeat')!;
     context.lineWidth = paths.width;
     context.stroke();
     texture.refresh();

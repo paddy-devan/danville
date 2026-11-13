@@ -5,9 +5,10 @@
       "id": "grass-arena-1",
       "name": "Grass Arena - Level 1",
       "mapEnabled": false,
-      "width": 960,
-      "height": 640,
-      "spawn": { "x": 480, "y": 320 },
+      "width": 2400,
+      "height": 1600,
+      "spawn": { "x": 80, "y": 800 },
+      "paths": true,
       "tent": {
         "returnScene": "field",
         "returnArea": { "left": -22, "right": -18, "top": -8, "bottom": 8 },
@@ -45,7 +46,7 @@
     },
     "ground": "/assets/terrain/grass.png",
     "paths": {
-      "texture": "/assets/terrain/cobblestone.svg",
+      "texture": "/assets/terrain/dirt-gravel.svg",
       "width": 40,
       "cornerRadius": 64,
       "referenceSize": { "width": 805, "height": 534 },
@@ -65,7 +66,8 @@
         { "name": "Southern loop", "points": [[395,294],[375,309],[344,325],[323,350],[316,380],[319,407],[336,433],[356,453],[357,477],[354,491],[335,501],[310,519],[299,534]] },
         { "name": "Southeast loop", "points": [[356,462],[386,462],[417,462],[446,452],[461,431],[470,400],[486,377],[512,365],[548,357],[580,350],[605,341],[632,326],[646,309]] },
         { "name": "Southwest loop", "points": [[354,272],[342,294],[319,307],[288,308],[269,316],[236,318],[212,313],[183,297],[155,283],[142,296],[135,318],[138,335],[165,353],[194,372],[214,393],[226,414],[219,435],[198,452],[201,477],[197,497],[181,525]] },
-        { "name": "Southwest cross street", "points": [[219,437],[242,437],[268,444],[290,443],[313,433],[327,418]] }
+        { "name": "Southwest cross street", "points": [[219,437],[242,437],[268,444],[290,443],[313,433],[327,418]] },
+        { "name": "Campsite entrance", "points": [[43,267],[125,267],[155,283]] }
       ]
     },
     "longGrass": {

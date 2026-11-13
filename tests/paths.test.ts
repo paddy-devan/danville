@@ -8,6 +8,12 @@ const content = JSON.parse(readFileSync(new URL('../src/content/game.json', impo
 const world = content.world;
 const paths = buildPaths(world.paths, world);
 
+test('level 1 matches the Grassland path geometry at the same world scale', () => {
+  const level = content.levels.find((entry: { id: string }) => entry.id === 'grass-arena-1');
+  const settings = level.paths === true ? world.paths : level.paths;
+  assert.deepEqual(buildPaths(settings, level), paths);
+});
+
 test('routes preserve their endpoints, close loops and scale with the world', () => {
   world.paths.routes.forEach((route: { points: number[][] }, index: number) => {
     if (route.points[0][0] === route.points.at(-1)![0]
@@ -59,7 +65,7 @@ test('path clearance includes width, padding and round ends while leaving the gr
   assert.equal(isOnPath(390 / 805 * world.width, 263 / 534 * world.height, paths), false);
 });
 
-test('grass never overlaps cobblestones and remains deterministic across chunk sizes', () => {
+test('grass never overlaps paths and remains deterministic across chunk sizes', () => {
   const layout = (chunkSize: number) => {
     const settings = { ...world, chunkSize, longGrass: { ...world.longGrass, density: 1 } };
     return visibleChunks({ x: 0, y: 0, width: world.width, height: world.height }, settings)
