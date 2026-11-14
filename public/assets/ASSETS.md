@@ -1,5 +1,11 @@
 # Artwork
 
+## Playable Town exterior
+
+`maps/town.png` is a 1536 by 1024 opaque background, edited with built-in Image Gen from the approved `docs/design/town-floorplan-v2.png`. It preserves the asymmetric streets, three semi-detached pairs, quiet southwestern home and garden, music shops and three flexible premises. Planning labels, banners, highlights and arrows were removed; open gates were added to the player's garden and the southern homes. Exit labels and nearby building names are rendered by the game. The full edit prompt is saved in `docs/design/town-production-prompt.txt`.
+
+`maps/town.json` supplies separate, editable ground geometry and building identities: named walkable polygons, solid building/prop bounds, doorway approaches and exit destinations. The background image is not used as a collision mask. `maps/town-collision.png` is a separate opaque 1536 by 1024 binary mask, initially exported from the authored ground polygons: white is walkable and black is blocked. This PNG is the active collision source; the JSON polygons remain a fallback for levels without a configured mask. Press E in Town to paint it, then export PNG to replace this file. Browser drafts override the shipped PNG until Restore map is used. See `docs/design/collision-painting.md`. Keep geometry and visible features aligned when replacing the artwork. This first exterior uses one background layer, with no independently animated props or roof occlusion. The existing player sheet, shadow and controls are drawn separately. Interior artwork is not included.
+
 ## Green arena tent
 
 `props/green-tent-side.png` is the active arena tent, edited with built-in Image Gen from `green-tent.png` to face side-on with its triangular entrance at the right. It preserves the green fabric, folds, stitching, stakes and transparent background. Display size, spawn-relative placement and collision/doorway geometry are configured separately in the level's `tent` settings. The original image below is retained as the edit source.

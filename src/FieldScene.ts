@@ -8,6 +8,9 @@ import type { TerrainChunk } from './terrain';
 import { outlineSpriteSheet } from './spriteOutline';
 import { tentWalls } from './tent';
 import type { TentCollision } from './tent';
+import { locationGroundMask, locationWalls, nearestLocationPosition, replaceLocationMask } from './location';
+import type { LocationLayout } from './location';
+import { CollisionEditor, collisionDraftKey, maskFromImage } from './CollisionEditor';
 
 interface LevelSettings {
   width: number;
@@ -15,6 +18,7 @@ interface LevelSettings {
   spawn: { x: number; y: number };
   name: string;
   mapEnabled?: boolean;
+  layout?: { image: string; data: string; mask?: string };
   paths?: typeof content.world.paths | boolean;
   levelEntrance?: typeof content.world.levelEntrance;
   tent?: {
@@ -48,7 +52,12 @@ export class FieldScene extends Phaser.Scene {
   private playerOutline?: Phaser.GameObjects.Sprite;
   private playerPixels?: ImageData;
   private tentPixels?: ImageData;
-  private readonly obstacles: Bounds[];
+  private obstacles: Bounds[];
+  private location?: LocationLayout;
+  private locationLabel?: Phaser.GameObjects.Text;
+  private collisionEditKey?: Phaser.Input.Keyboard.Key;
+  private collisionEditor?: CollisionEditor;
+  private originalLocationMask?: Uint8Array;
 
   constructor(key = 'field', private readonly level?: LevelSettings) {
     super(key);
@@ -60,6 +69,17 @@ export class FieldScene extends Phaser.Scene {
   }
 
   preload() {
+    if (this.level?.layout) {
+      this.load.image(`location-${this.sys.settings.key}`, this.level.layout.image);
+      this.load.json(`location-layout-${this.sys.settings.key}`, this.level.layout.data);
+      if (this.level.layout.mask) this.load.image(`collision-mask-${this.sys.settings.key}`, this.level.layout.mask);
+      const draftKey = `collision-draft-${this.sys.settings.key}`;
+      if (this.textures.exists(draftKey)) this.textures.remove(draftKey);
+      try {
+        const draft = localStorage.getItem(collisionDraftKey(this.sys.settings.key));
+        if (draft?.startsWith('data:image/png;base64,')) this.load.image(draftKey, draft);
+      } catch { /* Painting still works for this session when storage is unavailable. */ }
+    }
     if (this.level?.tent) this.load.image(`tent-${this.sys.settings.key}`, this.level.tent.image);
     this.load.image('grass', this.world.ground);
     if (this.world.paths) this.load.image(`path-surface-${this.sys.settings.key}`, this.world.paths.texture);
@@ -78,11 +98,26 @@ export class FieldScene extends Phaser.Scene {
     const player = content.player;
     const spawn = this.level?.spawn ?? player.spawn;
     this.terrain.clear();
+    this.location = this.level?.layout ? this.cache.json.get(`location-layout-${this.sys.settings.key}`) : undefined;
+    if (this.location) {
+      const key = this.sys.settings.key;
+      this.originalLocationMask ??= this.textures.exists(`collision-mask-${key}`)
+        ? maskFromImage(this.textures.get(`collision-mask-${key}`).getSourceImage() as HTMLImageElement,
+          this.world.width, this.world.height) : locationGroundMask(this.location);
+      replaceLocationMask(this.location, this.originalLocationMask);
+      const draft = this.textures.exists(`collision-draft-${key}`)
+        ? this.textures.get(`collision-draft-${key}`).getSourceImage() as HTMLImageElement : undefined;
+      if (draft?.width === this.world.width && draft.height === this.world.height) {
+        replaceLocationMask(this.location, maskFromImage(draft, this.world.width, this.world.height));
+      }
+      this.obstacles = locationWalls(this.location);
+    }
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       if (this.paths) {
         for (const key of this.terrain.keys()) this.textures.remove(this.pathTextureKey(key));
       }
       this.terrain.clear();
+      this.collisionEditor?.destroy(); this.collisionEditor = undefined;
     });
 
     for (const [direction, frames] of Object.entries(player.animations)) {
@@ -102,12 +137,22 @@ export class FieldScene extends Phaser.Scene {
       top: player.frameHeight + 4,
       bottom: world.height - 4,
     };
+    if (this.location) {
+      let safe = nearestLocationPosition(this.location, this.state.x, this.state.y, this.bounds);
+      if (!safe) {
+        replaceLocationMask(this.location, this.originalLocationMask!);
+        this.obstacles = locationWalls(this.location);
+        safe = nearestLocationPosition(this.location, this.state.x, this.state.y, this.bounds);
+      }
+      if (safe) Object.assign(this.state, safe);
+    }
     const x = Math.round(this.state.x);
     const y = Math.round(this.state.y);
     this.shadow = this.add.ellipse(x, y - 2, 16, 5, 0x2c502c, 0.28).setDepth(2);
     this.player = this.add.sprite(x, y, 'player', player.animations.down.idle)
       .setOrigin(0.5, 1).setDepth(3);
     if (this.level?.tent) this.createTent(spawn);
+    if (this.location) this.createLocation();
 
     const entrance = world.levelEntrance;
     if (entrance) {
@@ -132,11 +177,13 @@ export class FieldScene extends Phaser.Scene {
     this.cursors = this.input.keyboard!.createCursorKeys();
     this.pauseKey = this.input.keyboard!.addKey('P');
     this.mapKey = this.input.keyboard!.addKey('M');
+    if (this.location) this.collisionEditKey = this.input.keyboard!.addKey('E');
     const updateControlsHint = () => {
       const controls = document.getElementById('controls');
       if (controls) {
         controls.textContent = 'Arrow keys to move · P to pause'
-          + (this.level?.mapEnabled === false ? '' : ' · M for map');
+          + (this.level?.mapEnabled === false ? '' : ' · M for map')
+          + (this.location ? ' · E to paint' : '');
       }
     };
     updateControlsHint();
@@ -150,6 +197,10 @@ export class FieldScene extends Phaser.Scene {
 
   update(_time: number, delta: number) {
     if (!this.cursors) return;
+    if (this.collisionEditKey && Phaser.Input.Keyboard.JustDown(this.collisionEditKey)
+      && !this.collisionEditKey.originalEvent.repeat) {
+      this.openCollisionEditor(); return;
+    }
     if (this.level?.mapEnabled !== false
       && Phaser.Input.Keyboard.JustDown(this.mapKey) && !this.mapKey.originalEvent.repeat) {
       this.scene.launch('map', { returnScene: this.sys.settings.key });
@@ -195,6 +246,84 @@ export class FieldScene extends Phaser.Scene {
       this.player.setFrame(animation.idle);
     }
     this.updateTentOcclusion();
+    this.updateLocation();
+  }
+
+  private createLocation() {
+    this.add.image(0, 0, `location-${this.sys.settings.key}`).setOrigin(0).setDepth(0);
+    const overlay = this.location!.walkableOverlay;
+    if (overlay) {
+      const key = `walkable-overlay-${this.sys.settings.key}`;
+      this.textures.createCanvas(key, this.world.width, this.world.height);
+      this.add.image(0, 0, key).setOrigin(0).setDepth(0.5)
+        .setAlpha(overlay.alpha).setName('walkable-overlay');
+      this.refreshLocationOverlay();
+      this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.textures.remove(key));
+    }
+    this.locationLabel = this.add.text(12, 42, '', {
+      fontFamily: 'monospace', fontSize: '11px', color: '#fffde9',
+      backgroundColor: '#243c2b', padding: { x: 6, y: 4 },
+    }).setScrollFactor(0).setDepth(10).setVisible(false);
+    for (const exit of this.location!.exits) {
+      this.add.text(exit.x, exit.y - 24, exit.name, {
+        fontFamily: 'monospace', fontSize: '11px', color: '#fffde9',
+        backgroundColor: '#243c2b', padding: { x: 5, y: 3 },
+      }).setOrigin(0.5, 1).setDepth(1);
+    }
+  }
+
+  private refreshLocationOverlay() {
+    const overlay = this.location?.walkableOverlay;
+    if (!overlay) return;
+    const texture = this.textures.get(`walkable-overlay-${this.sys.settings.key}`) as Phaser.Textures.CanvasTexture;
+    const context = texture.context;
+    context.clearRect(0, 0, this.world.width, this.world.height);
+    context.fillStyle = overlay.color;
+    context.fillRect(this.bounds.left, this.bounds.top,
+      this.bounds.right - this.bounds.left, this.bounds.bottom - this.bounds.top);
+    for (const wall of this.obstacles) context.clearRect(wall.left, wall.top, wall.right - wall.left, wall.bottom - wall.top);
+    texture.refresh();
+  }
+
+  private openCollisionEditor() {
+    if (!this.location || this.collisionEditor) return;
+    this.player.stop();
+    this.scene.pause();
+    this.collisionEditor = new CollisionEditor(this.sys.settings.key,
+      this.textures.get(`location-${this.sys.settings.key}`).getSourceImage() as HTMLImageElement,
+      this.world.width, this.world.height, locationGroundMask(this.location), this.originalLocationMask!,
+      (mask) => {
+        const previous = locationGroundMask(this.location!);
+        replaceLocationMask(this.location!, mask);
+        const safe = nearestLocationPosition(this.location!, this.state.x, this.state.y, this.bounds);
+        if (!safe) { replaceLocationMask(this.location!, previous); return false; }
+        Object.assign(this.state, safe);
+        this.obstacles = locationWalls(this.location!);
+        this.refreshLocationOverlay();
+        return true;
+      }, () => {
+        this.collisionEditor = undefined;
+        this.input.keyboard!.resetKeys();
+        this.scene.resume();
+      });
+    this.collisionEditor.open();
+  }
+
+  private updateLocation() {
+    if (!this.location) return;
+    const door = this.location.buildings.flatMap((building) => building.doors)
+      .find((door) => Math.hypot(this.state.x - door.x, this.state.y - door.y) < 36);
+    this.locationLabel!.setText(door?.name ?? '').setVisible(!!door);
+    for (const exit of this.location.exits) {
+      if (!exit.scene || Math.hypot(this.state.x - exit.x, this.state.y - exit.y) > 18) continue;
+      // Leave a safe return position so a map visit cannot immediately retrigger the exit.
+      this.state.x = exit.arrival?.x ?? exit.x;
+      this.state.y = exit.arrival?.y ?? exit.y - 48;
+      this.player.setPosition(Math.round(this.state.x), Math.round(this.state.y));
+      this.shadow.setPosition(this.player.x, this.player.y - 2);
+      this.scene.switch(exit.scene);
+      return;
+    }
   }
 
   private createTent(spawn: { x: number; y: number }) {
@@ -272,6 +401,7 @@ export class FieldScene extends Phaser.Scene {
   private updateTerrain() {
     const camera = this.cameras.main;
     camera.centerOn(this.player.x, this.player.y);
+    if (this.location) return;
     const chunks = visibleChunks({ x: camera.scrollX, y: camera.scrollY,
       width: camera.width, height: camera.height }, this.world);
     const needed = new Set(chunks.map((chunk) => chunk.key));

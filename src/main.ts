@@ -7,7 +7,7 @@ import './style.css';
 
 document.documentElement.style.setProperty('--game-aspect', String(content.viewport.width / content.viewport.height));
 
-new Phaser.Game({
+export const game = new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'game',
   width: content.viewport.width,

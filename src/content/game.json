@@ -23,6 +23,15 @@
           "playerRadius": 6
         }
       }
+    },
+    {
+      "id": "town",
+      "name": "Town",
+      "mapEnabled": true,
+      "width": 1536,
+      "height": 1024,
+      "spawn": { "x": 272, "y": 836 },
+      "layout": { "image": "/assets/maps/town.png", "data": "/assets/maps/town.json", "mask": "/assets/maps/town-collision.png" }
     }
   ],
   "map": {
@@ -30,7 +39,7 @@
     "arenas": [
       { "id": "woodlands", "label": "Woodland", "x": 5, "y": 8, "width": 19, "height": 27 },
       { "id": "city", "label": "City", "x": 54, "y": 9, "width": 42, "height": 46 },
-      { "id": "town", "label": "Town", "x": 27, "y": 36, "width": 24, "height": 30 },
+      { "id": "town", "label": "Town", "x": 27, "y": 36, "width": 24, "height": 30, "scene": "town" },
       { "id": "grassland", "label": "Grassland", "x": 10, "y": 62, "width": 20, "height": 26, "texture": "ground", "scene": "field" },
       { "id": "beach", "label": "Beach", "x": 52, "y": 74, "width": 46, "height": 24 }
     ]
