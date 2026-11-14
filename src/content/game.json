@@ -1,12 +1,46 @@
 {
   "viewport": { "width": 480, "height": 320 },
+  "levels": [
+    {
+      "id": "grass-arena-1",
+      "name": "Grass Arena - Level 1",
+      "mapEnabled": false,
+      "width": 2400,
+      "height": 1600,
+      "spawn": { "x": 80, "y": 800 },
+      "paths": true,
+      "tent": {
+        "returnScene": "field",
+        "returnArea": { "left": -22, "right": -18, "top": -8, "bottom": 8 },
+        "image": "/assets/props/green-tent-side.png",
+        "width": 128,
+        "height": 96,
+        "offsetFromSpawn": { "x": 0, "y": 32 },
+        "collision": {
+          "bounds": { "left": -32, "right": 48, "top": -18, "bottom": 18 },
+          "wallThickness": 4,
+          "doorway": { "top": -12, "bottom": 12 },
+          "playerRadius": 6
+        }
+      }
+    },
+    {
+      "id": "town",
+      "name": "Town",
+      "mapEnabled": true,
+      "width": 1536,
+      "height": 1024,
+      "spawn": { "x": 272, "y": 836 },
+      "layout": { "image": "/assets/maps/town.png", "data": "/assets/maps/town.json", "mask": "/assets/maps/town-collision.png" }
+    }
+  ],
   "map": {
     "image": "/assets/maps/arena-map.png",
     "arenas": [
       { "id": "woodlands", "label": "Woodland", "x": 5, "y": 8, "width": 19, "height": 27 },
       { "id": "city", "label": "City", "x": 54, "y": 9, "width": 42, "height": 46 },
-      { "id": "town", "label": "Town", "x": 27, "y": 36, "width": 24, "height": 30 },
-      { "id": "grassland", "label": "Grassland", "x": 10, "y": 62, "width": 20, "height": 26, "texture": "ground" },
+      { "id": "town", "label": "Town", "x": 27, "y": 36, "width": 24, "height": 30, "scene": "town" },
+      { "id": "grassland", "label": "Grassland", "x": 10, "y": 62, "width": 20, "height": 26, "texture": "ground", "scene": "field" },
       { "id": "beach", "label": "Beach", "x": 52, "y": 74, "width": 46, "height": 24 }
     ]
   },
@@ -14,9 +48,14 @@
     "width": 2400,
     "height": 1600,
     "chunkSize": 256,
+    "levelEntrance": {
+      "offsetFromSpawn": { "x": 48, "y": 0 },
+      "radius": 10,
+      "scene": "grass-arena-1"
+    },
     "ground": "/assets/terrain/grass.png",
     "paths": {
-      "texture": "/assets/terrain/cobblestone.svg",
+      "texture": "/assets/terrain/dirt-gravel.svg",
       "width": 40,
       "cornerRadius": 64,
       "referenceSize": { "width": 805, "height": 534 },
@@ -36,7 +75,8 @@
         { "name": "Southern loop", "points": [[395,294],[375,309],[344,325],[323,350],[316,380],[319,407],[336,433],[356,453],[357,477],[354,491],[335,501],[310,519],[299,534]] },
         { "name": "Southeast loop", "points": [[356,462],[386,462],[417,462],[446,452],[461,431],[470,400],[486,377],[512,365],[548,357],[580,350],[605,341],[632,326],[646,309]] },
         { "name": "Southwest loop", "points": [[354,272],[342,294],[319,307],[288,308],[269,316],[236,318],[212,313],[183,297],[155,283],[142,296],[135,318],[138,335],[165,353],[194,372],[214,393],[226,414],[219,435],[198,452],[201,477],[197,497],[181,525]] },
-        { "name": "Southwest cross street", "points": [[219,437],[242,437],[268,444],[290,443],[313,433],[327,418]] }
+        { "name": "Southwest cross street", "points": [[219,437],[242,437],[268,444],[290,443],[313,433],[327,418]] },
+        { "name": "Campsite entrance", "points": [[43,267],[125,267],[155,283]] }
       ]
     },
     "longGrass": {

@@ -131,10 +131,58 @@ canvas {
   position: absolute;
   bottom: 16px;
   left: 16px;
+  right: 16px;
   margin: 0;
   font-size: 12px;
   line-height: 1.5;
   text-shadow: 1px 1px #34552d;
   pointer-events: none;
   user-select: none;
+}
+
+.collision-editor[open] {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  gap: 10px;
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 14px;
+  border: 0;
+  background: #18281f;
+  color: #f5f0d4;
+  font: 13px/1.5 monospace;
+}
+
+.collision-editor::backdrop { background: #18281f; }
+.collision-editor-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.collision-editor-toolbar strong { margin-right: 12px; }
+.collision-editor-toolbar button {
+  padding: 8px 12px;
+  border: 1px solid #69806b;
+  border-radius: 4px;
+  background: #2e4435;
+  color: #f5f0d4;
+  font: inherit;
+  cursor: pointer;
+}
+.collision-editor-toolbar button:hover { background: #405d48; }
+.collision-editor-toolbar button:focus-visible { outline: 2px solid #a8ddff; outline-offset: 2px; }
+.collision-editor-toolbar button[aria-pressed='true'] { border-color: #a8ddff; background: #285171; }
+.collision-editor-toolbar button:disabled { opacity: 0.4; cursor: default; }
+.collision-editor-toolbar .collision-editor-play { margin-left: auto; background: #416942; }
+.collision-editor-toolbar label { display: flex; align-items: center; gap: 6px; }
+.collision-editor-toolbar input[type='range'] { width: 110px; accent-color: #71b7ff; }
+.collision-editor-toolbar output { min-width: 44px; }
+.collision-editor-help, .collision-editor-status { margin: 0; color: #becdbd; }
+.collision-editor-canvas { width: 100%; height: 100%; min-height: 0; background: #101c15; touch-action: none; cursor: crosshair; }
+@media (max-width: 600px) {
+  .collision-editor[open] { padding: 8px; gap: 6px; font-size: 12px; }
+  .collision-editor-toolbar { gap: 5px; }
+  .collision-editor-toolbar strong { flex-basis: 100%; }
+  .collision-editor-toolbar button { padding: 6px 8px; }
 }

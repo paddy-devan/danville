@@ -3,9 +3,14 @@ import content from './content/game.json';
 
 export class MapScene extends Phaser.Scene {
   private mapKey!: Phaser.Input.Keyboard.Key;
+  private returnScene = 'field';
 
   constructor() {
     super('map');
+  }
+
+  init(data: { returnScene?: string }) {
+    this.returnScene = data.returnScene ?? 'field';
   }
 
   create() {
@@ -46,6 +51,16 @@ export class MapScene extends Phaser.Scene {
       label.textContent = arena.label;
       button.append(terrain, label);
       button.addEventListener('click', () => {
+        if (arena.scene) {
+          this.scene.resume(this.returnScene);
+          if (arena.scene !== this.returnScene) {
+            // Phaser only allows running scenes to sleep, so resume before switching.
+            this.scene.sleep(this.returnScene);
+            this.scene.run(arena.scene);
+          }
+          this.scene.stop();
+          return;
+        }
         for (const other of map.querySelectorAll('.map-arena')) {
           other.setAttribute('aria-pressed', String(other === button));
         }
@@ -76,7 +91,7 @@ export class MapScene extends Phaser.Scene {
 
   update() {
     if (Phaser.Input.Keyboard.JustDown(this.mapKey) && !this.mapKey.originalEvent.repeat) {
-      this.scene.resume('field');
+      this.scene.resume(this.returnScene);
       this.scene.stop();
     }
   }

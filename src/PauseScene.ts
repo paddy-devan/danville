@@ -2,9 +2,14 @@ import Phaser from 'phaser';
 
 export class PauseScene extends Phaser.Scene {
   private pauseKey!: Phaser.Input.Keyboard.Key;
+  private returnScene = 'field';
 
   constructor() {
     super('pause');
+  }
+
+  init(data: { returnScene?: string }) {
+    this.returnScene = data.returnScene ?? 'field';
   }
 
   create() {
@@ -47,7 +52,7 @@ export class PauseScene extends Phaser.Scene {
   }
 
   private resumeGame() {
-    this.scene.resume('field');
+    this.scene.resume(this.returnScene);
     this.scene.stop();
   }
 }

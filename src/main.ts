@@ -7,7 +7,7 @@ import './style.css';
 
 document.documentElement.style.setProperty('--game-aspect', String(content.viewport.width / content.viewport.height));
 
-new Phaser.Game({
+export const game = new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'game',
   width: content.viewport.width,
@@ -19,5 +19,5 @@ new Phaser.Game({
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [FieldScene, PauseScene, MapScene],
+  scene: [...content.levels.map((level) => new FieldScene(level.id, level)), FieldScene, PauseScene, MapScene],
 });
