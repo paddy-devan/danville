@@ -1,0 +1,10 @@
+Create ONE production game sprite atlas PNG with transparent background, 4 columns by 2 rows of EIGHT equal square cells, overall 2:1 landscape aspect ratio. Each cell has exactly one complete isolated prop centered, with at least 12% empty transparent padding around it; no props cross cells. No labels, grid lines, scenery, ground tiles or text. Consistent slightly elevated front three-quarter perspective for a classic top-down 2D farming RPG, front towards bottom of image, chunky crisp pixel art, dark outlines, restrained earthy colors, detailed material shading readable at small game sizes. Reference image is STYLE ONLY: green canvas tent folds, stitching, outlines. It is not an edit target. All eight props are same world scale but individually framed.
+Cell row1 col1: modest ochre canvas A-frame two-person camping tent with dark open entrance facing bottom right, stakes, short guy ropes contained in cell.
+row1 col2: muted teal small dome camping tent, entrance facing bottom left, fabric seams and short stakes.
+row1 col3: stone-ring communal firepit, cold grey ashes and two charred crossed logs, no tall flames or smoke, seen slightly from above.
+row1 col4: single blue-green plastic portable toilet cubicle, light grey roof, closed front door, vent and tiny occupancy indicator, full height and base.
+row2 col1: outdoor communal water washing basin: galvanized rectangular trough on four short metal legs, two upright brass taps on back edge, blue water visible inside, a small pipe below; no shelter.
+row2 col2: rustic wooden picnic table with attached benches, visible planks and sturdy legs.
+row2 col3: simple long low rough timber log bench for sitting around firepit, two short supports.
+row2 col4: paired compact rubbish and recycling bins, dark green and muted blue, lids and small simple symbols, no lettering.
+No stage, no people, no musical instruments. Real transparent alpha, no checkerboard baked in. Clean sprite atlas, all eight sprites separated.
