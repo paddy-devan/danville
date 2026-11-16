@@ -49,18 +49,19 @@ export class CollisionEditor {
 
   constructor(private readonly id: string, private readonly image: CanvasImageSource,
     width: number, height: number, initial: Uint8Array, private readonly original: Uint8Array,
-    private readonly apply: (mask: Uint8Array) => boolean, private readonly close: () => void) {
+    private readonly apply: (mask: Uint8Array) => boolean, private readonly close: () => void,
+    private readonly name = 'Map') {
     this.model = new CollisionPaint(width, height, initial);
   }
 
   open() {
     const signal = this.abort.signal;
     this.dialog.className = 'collision-editor';
-    this.dialog.setAttribute('aria-label', 'Town collision painter');
+    this.dialog.setAttribute('aria-label', `${this.name} collision painter`);
     const bar = document.createElement('div');
     bar.className = 'collision-editor-toolbar';
     const title = document.createElement('strong');
-    title.textContent = 'Town · Collision painter';
+    title.textContent = `${this.name} · Collision painter`;
     bar.append(title);
     const button = (element: HTMLButtonElement, label: string, action: () => void) => {
       element.type = 'button'; element.textContent = label;
@@ -92,7 +93,7 @@ export class CollisionEditor {
     this.status.className = 'collision-editor-status';
     this.status.setAttribute('role', 'status');
     this.status.textContent = 'Changes save in this browser. Export PNG to keep a copy for the game.';
-    this.canvas.setAttribute('aria-label', 'Paint walkable and blocked ground on the Town map');
+    this.canvas.setAttribute('aria-label', `Paint walkable and blocked ground on the ${this.name} map`);
     this.canvas.className = 'collision-editor-canvas';
     this.canvas.addEventListener('contextmenu', (event) => event.preventDefault(), { signal });
     this.canvas.addEventListener('pointerdown', (event) => this.pointerDown(event), { signal });

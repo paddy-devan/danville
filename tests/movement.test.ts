@@ -45,7 +45,7 @@ test('all eight inputs select the matching facing direction', () => {
   }
 });
 
-test('stopping preserves each diagonal facing; releasing one arrow returns to cardinal facing', () => {
+test('stopping preserves each diagonal facing; releasing one direction returns to cardinal facing', () => {
   for (const x of [-1, 1]) for (const y of [-1, 1]) {
     const diagonal = movePlayer(start, { x, y }, 0.1, 72, bounds);
     assert.deepEqual(movePlayer(diagonal, { x: 0, y: 0 }, 0.1, 72, bounds), { ...diagonal, moving: false });

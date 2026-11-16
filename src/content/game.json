@@ -1,5 +1,6 @@
 {
   "viewport": { "width": 480, "height": 320 },
+  "camera": { "zoom": 1, "minZoom": 0.5, "maxZoom": 3, "wheelSensitivity": 0.0015 },
   "levels": [
     {
       "id": "grass-arena-1",
@@ -9,6 +10,7 @@
       "height": 1600,
       "spawn": { "x": 80, "y": 800 },
       "paths": true,
+      "props": "festival",
       "tent": {
         "returnScene": "field",
         "returnArea": { "left": -22, "right": -18, "top": -8, "bottom": 8 },
@@ -45,6 +47,7 @@
     ]
   },
   "world": {
+    "props": "festival",
     "width": 2400,
     "height": 1600,
     "chunkSize": 256,

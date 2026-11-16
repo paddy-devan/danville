@@ -16,6 +16,20 @@ export interface LocationLayout {
 
 const groundMasks = new WeakMap<LocationLayout, Uint8Array>();
 
+/** Fields start open, with their authored (already foot-expanded) walls as the editable baseline. */
+export function fieldCollisionLayout(world: { width: number; height: number }, walls: readonly Bounds[]): LocationLayout {
+  const playerRadius = 3;
+  return { width: world.width, height: world.height, cellSize: 2, playerRadius,
+    walkableAreas: [{ name: 'Field', points: [[0, 0], [world.width, 0],
+      [world.width, world.height], [0, world.height]] }],
+    buildings: [], exits: [],
+    obstacles: walls.map((wall, i) => ({ name: `Field obstacle ${i + 1}`, bounds: {
+      left: wall.left + playerRadius, right: wall.right - playerRadius,
+      top: wall.top + playerRadius, bottom: wall.bottom - playerRadius,
+    } })),
+  };
+}
+
 export function locationGroundMask(layout: LocationLayout): Uint8Array {
   return groundMask(layout).slice();
 }
